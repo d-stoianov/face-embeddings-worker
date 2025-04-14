@@ -1,0 +1,21 @@
+{
+    "name": "face-embeddings-worker",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "dev": "nodemon",
+        "start": "node dist/main.js",
+        "build": "tsc"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "dotenv": "^16.4.7",
+        "eslint": "^9.24.0",
+        "nodemon": "^3.1.9",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.3"
+    }
+}
