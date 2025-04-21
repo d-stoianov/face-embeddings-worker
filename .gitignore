@@ -134,3 +134,6 @@ tmp
 
 # vscode folder
 .vscode
+
+# secrets
+secrets

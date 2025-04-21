@@ -1,4 +1,5 @@
-import loadModels from './config/faceapi_config'
+import loadModels from './config/faceapi'
+import './config/firebase' // create firebase app instance
 
 import listenCompareEmbeddings from './compare_embeddings'
 import mqConnection from './connection'
