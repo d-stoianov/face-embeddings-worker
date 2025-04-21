@@ -1,5 +1,5 @@
 import client, { ChannelModel, Channel } from 'amqplib'
-import { AMQP_URL } from './config'
+import { AMQP_URL } from './config/config'
 
 class RabbitMQConnection {
     private connection!: ChannelModel

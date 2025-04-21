@@ -131,3 +131,6 @@ dist
 
 # tmp folder
 tmp
+
+# vscode folder
+.vscode
