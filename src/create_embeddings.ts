@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises'
+import firebaseApp from './config/firebase'
 import mqConnection from './connection'
 import EmbeddingsService from './EmbeddingsService'
 
@@ -20,17 +20,12 @@ async function listenCreateEmbeddings() {
                 fileBuffer
             )
 
-            // if there are faces - write in in the json
-            if (faceEmbeddings.length > 0) {
-                await fs.writeFile(
-                    `./tmp/${fileName}.json`,
-                    JSON.stringify(faceEmbeddings)
-                )
-            }
             // no faces found
-            else {
+            if (faceEmbeddings.length <= 0) {
                 console.error('No faces on the image')
             }
+
+            await firebaseApp.storeEmbeddings(fileName, faceEmbeddings)
 
             // acknowledge message
             channel.ack(msg)
