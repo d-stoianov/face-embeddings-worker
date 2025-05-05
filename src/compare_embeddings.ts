@@ -1,52 +1,76 @@
-import * as fs from 'fs/promises'
+import firebaseApp from './config/firebase'
 import mqConnection from './connection'
-import EmbeddingsService, { FaceEmbedding } from './EmbeddingsService'
+import EmbeddingsService from './EmbeddingsService'
 
-const queue = 'compare_embeddings'
+const receiveQueue = 'compare_embeddings'
 
 async function listenCompareEmbeddings() {
-    await mqConnection.receive(queue, async (msg, channel) => {
+    await mqConnection.receive(receiveQueue, async (msg, channel) => {
         if (msg) {
-            console.log(`New message in the queue - ${queue}`)
+            console.log(`New message in the queue - ${receiveQueue}`)
 
             const response = JSON.parse(msg.content.toString())
-            const { srcFileName, destFileNames } = response
+            const { compareKey, eventId, selfieBinary } = response
 
-            const srcFaceEmbeddingsRaw = await fs.readFile(
-                `./tmp/${srcFileName}.json`,
-                'utf8'
+            const fileBuffer = Buffer.from(selfieBinary, 'base64')
+
+            console.log('Creating face embeddings...')
+
+            const selfieEmbeddings =
+                await EmbeddingsService.createFaceEmbeddings(fileBuffer)
+
+            console.log('Face embeddings created')
+
+            if (selfieEmbeddings.length === 0) {
+                console.log('No faces found on the selfie')
+                channel.ack(msg)
+                return
+            }
+
+            if (selfieEmbeddings.length > 1) {
+                console.log('Selfie should contain only one face')
+                channel.ack(msg)
+                return
+            }
+
+            const faceEmbeddings = selfieEmbeddings[0]
+
+            const fileNameEmbeddingsMap = await firebaseApp.getEmbeddings(
+                eventId
             )
-            // take first face
-            const srcFaceEmbedding: FaceEmbedding =
-                JSON.parse(srcFaceEmbeddingsRaw)[0]
 
-            destFileNames.forEach(async (destFileName: string) => {
-                const destFaceEmbeddingsRaw = await fs.readFile(
-                    `./tmp/${destFileName}.json`,
-                    'utf8'
-                )
-                const destFaceEmbeddings: FaceEmbedding[] = JSON.parse(
-                    destFaceEmbeddingsRaw
-                )
+            console.log(
+                `Got ${fileNameEmbeddingsMap.size} embeddings by event id`
+            )
+
+            const matches: string[] = []
+
+            for (const [fileName, embeddings] of fileNameEmbeddingsMap) {
+                if (!embeddings) {
+                    continue
+                }
 
                 const match = EmbeddingsService.compareFaceEmbeddings(
-                    srcFaceEmbedding,
-                    destFaceEmbeddings
+                    faceEmbeddings,
+                    embeddings
                 )
 
                 // if face matches faces from another embeddings
                 if (match) {
-                    console.log(
-                        `Found match ${srcFileName} with ${destFileName}`
-                    )
+                    console.log(`Found match with ${fileName}`)
+                    matches.push(fileName)
                 }
                 // no match found
                 else {
-                    console.error(
-                        `No match found ${srcFileName} with ${destFileName}`
-                    )
+                    console.error(`No match found with ${fileName}`)
                 }
-            })
+            }
+
+            console.log('Saving compare result to the firestore..')
+
+            await firebaseApp.storeCompareResult(eventId, compareKey, matches)
+
+            console.log('Done')
 
             // acknowledge message
             channel.ack(msg)

@@ -10,7 +10,7 @@ async function listenCreateEmbeddings() {
             console.log(`New message in the queue - ${queue}`)
 
             const response = JSON.parse(msg.content.toString())
-            const { fileName, fileBinary } = response
+            const { eventId, fileName, fileBinary } = response
 
             const fileBuffer = Buffer.from(fileBinary, 'base64')
 
@@ -25,7 +25,7 @@ async function listenCreateEmbeddings() {
                 console.error('No faces on the image')
             }
 
-            await firebaseApp.storeEmbeddings(fileName, faceEmbeddings)
+            await firebaseApp.storeEmbeddings(eventId, fileName, faceEmbeddings)
 
             // acknowledge message
             channel.ack(msg)

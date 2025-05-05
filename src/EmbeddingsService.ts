@@ -13,7 +13,9 @@ class EmbeddingsService {
             .withFaceLandmarks()
             .withFaceDescriptors()
 
-        return detections.map((d) => d.descriptor)
+        return detections
+            .map((d) => d.descriptor)
+            .filter((descriptor) => descriptor !== undefined)
     }
 
     static compareFaceEmbeddings = (
