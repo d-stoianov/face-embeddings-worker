@@ -1,8 +1,6 @@
 import { Canvas, Image, ImageData } from 'canvas'
 import * as faceapi from 'face-api.js'
-import path from 'path'
-
-const MODELS_PATH = path.join(__dirname, '../../models')
+import { MODELS_PATH } from './config'
 
 async function loadModels() {
     await faceapi.nets.ssdMobilenetv1.loadFromDisk(MODELS_PATH)
