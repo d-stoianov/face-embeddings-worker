@@ -1,8 +1,7 @@
-import { cert, initializeApp, ServiceAccount } from 'firebase-admin/app'
+import { cert, initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { FaceEmbedding } from '../EmbeddingsService'
-
-import serviceAccount from '../../secrets/service-account-key.json'
+import { FIREBASE_SERVICE_ACCOUNT } from './config'
 
 class FirebaseApp {
     private EMBEDDINGS_COLLECTION = 'embeddings'
@@ -13,7 +12,7 @@ class FirebaseApp {
 
     constructor() {
         this.app = initializeApp({
-            credential: cert(serviceAccount as ServiceAccount),
+            credential: cert(FIREBASE_SERVICE_ACCOUNT),
         })
         this.db = getFirestore(this.app)
 
@@ -85,7 +84,7 @@ class FirebaseApp {
                 {
                     [compareKey]: {
                         matches,
-                        ready: true
+                        ready: true,
                     },
                 },
                 { merge: true } // do not overwrite event collection)
