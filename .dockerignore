@@ -1,0 +1,10 @@
+node_modules
+dist
+.vscode
+.git
+.gitignore
+Dockerfile
+*.ts
+*.log
+.env
+.env.production
