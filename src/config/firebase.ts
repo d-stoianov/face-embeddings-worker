@@ -24,6 +24,9 @@ class FirebaseApp {
         fileName: string,
         embeddings: FaceEmbedding[]
     ) {
+        console.log(
+            `Storing embeddings by eventId - ${eventId} for the file - ${fileName} ...`
+        )
         await this.db
             .collection(this.EMBEDDINGS_COLLECTION)
             .doc(eventId)
@@ -36,6 +39,9 @@ class FirebaseApp {
                 },
                 { merge: true } // do not overwrite event collection
             )
+        console.log(
+            `Done storing embeddings by eventId - ${eventId} for the file - ${fileName}`
+        )
     }
 
     async getEmbeddings(

@@ -66,12 +66,15 @@ async function listenCompareEmbeddings() {
                 }
             }
 
-            console.log('Saving compare result to the firestore..')
+            console.log(
+                `Saving compare result - ${compareKey} to the firestore..`
+            )
 
             await firebaseApp.storeCompareResult(eventId, compareKey, matches)
 
-            console.log('Done')
-
+            console.log(
+                `Done saving compare result - ${compareKey} to the firestore`
+            )
             // acknowledge message
             channel.ack(msg)
         }
