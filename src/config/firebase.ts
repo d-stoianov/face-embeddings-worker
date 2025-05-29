@@ -1,19 +1,23 @@
 import { cert, initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
+import { getStorage } from 'firebase-admin/storage'
 import { FaceEmbedding } from '../EmbeddingsService'
-import { FIREBASE_SERVICE_ACCOUNT } from './config'
+import { FIREBASE_SERVICE_ACCOUNT, FIREBASE_STORAGE_BUCKET } from './config'
 
 class FirebaseApp {
     private EMBEDDINGS_COLLECTION = 'embeddings'
     private COMPARE_RESULT_COLLECTION = 'compare_result'
 
     private app
+    private bucket
     private db
 
     constructor() {
         this.app = initializeApp({
             credential: cert(FIREBASE_SERVICE_ACCOUNT),
+            storageBucket: FIREBASE_STORAGE_BUCKET,
         })
+        this.bucket = getStorage(this.app).bucket()
         this.db = getFirestore(this.app)
 
         console.log('Initialized firebase')
@@ -34,7 +38,7 @@ class FirebaseApp {
                 {
                     [fileName]: {
                         embeddings: JSON.stringify(embeddings),
-                        ready: 'true',
+                        status: 'true',
                     },
                 },
                 { merge: true } // do not overwrite event collection
@@ -90,11 +94,31 @@ class FirebaseApp {
                 {
                     [compareKey]: {
                         matches,
-                        ready: true,
+                        status: true,
                     },
                 },
                 { merge: true } // do not overwrite event collection)
             )
+    }
+
+    async getFile(folderName: string, fileName: string): Promise<Buffer> {
+        try {
+            const [files] = await this.bucket.getFiles()
+
+            const file = files.find(
+                (f) => f.name === `${folderName}/${fileName}`
+            )
+            if (!file) {
+                throw new Error(`File ${folderName}/${fileName} not found`)
+            }
+
+            const [contents] = await file.download()
+
+            return contents
+        } catch (error) {
+            console.error('Error while getting image from the bucket:', error)
+            throw error
+        }
     }
 }
 

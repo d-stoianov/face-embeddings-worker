@@ -10,9 +10,9 @@ async function listenCreateEmbeddings() {
             console.log(`New message in the queue - ${queue}`)
 
             const response = JSON.parse(msg.content.toString())
-            const { eventId, fileName, fileBinary } = response
+            const { eventId, fileName } = response
 
-            const fileBuffer = Buffer.from(fileBinary, 'base64')
+            const fileBuffer = await firebaseApp.getFile(eventId, fileName)
 
             console.log(`Creating face embeddings for ${fileName} ...`)
 

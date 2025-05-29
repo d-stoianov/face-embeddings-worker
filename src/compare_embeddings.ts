@@ -10,11 +10,11 @@ async function listenCompareEmbeddings() {
             console.log(`New message in the queue - ${receiveQueue}`)
 
             const response = JSON.parse(msg.content.toString())
-            const { compareKey, eventId, selfieBinary } = response
+            const { eventId, compareKey, fileName } = response
 
-            const fileBuffer = Buffer.from(selfieBinary, 'base64')
+            const fileBuffer = await firebaseApp.getFile(`${eventId}/${compareKey}`, fileName)
 
-            console.log('Creating face embeddings...')
+            console.log(`Creating face embeddings for ${fileName}...`)
 
             const selfieEmbeddings =
                 await EmbeddingsService.createFaceEmbeddings(fileBuffer)
